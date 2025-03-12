@@ -7,49 +7,63 @@ class BaseElement:
     def __init__(self, driver, locator):
         self.driver = driver
         self.locator = locator
-        self.web_element = None
 
     def wait_for_element(self, conditions):
         try:
             return WebDriverWait(self.driver, 10).until(conditions(self.locator))
-        except:
-            raise Exception(f"Timeout, waiting for element: {self.locator}")
-
-    def locate_element(self):
-        self.web_element = self.wait_for_element(EC.visibility_of_element_located)
+        except TimeoutError:
+            raise TimeoutError(f"Timeout, waiting for element: {self.locator}")
 
     def is_displayed(self):
-        self.locate_element()
-        return self.web_element.is_displayed()
-
-    def input_text(self, text):
         try:
-            self.web_element = self.wait_for_element(EC.element_to_be_clickable)
-            self.web_element.clear()
-            self.web_element.send_keys(text)
-        except:
-            raise Exception(f"Unable to locate or interact with the element: {self.locator}.")
+            self.wait_for_element(EC.visibility_of_element_located)
+            return True
+        except TimeoutError:
+            return False
 
-    def button_click(self):
+    def send_keys(self, text):
         try:
-            self.web_element = self.wait_for_element(EC.element_to_be_clickable)
-            self.web_element.click()
-        except:
-            raise Exception(f"Unable to locate or interact with the element to be click: {self.locator}.")
+            self.wait_for_element(EC.element_to_be_clickable)
+            element = self.driver.find_element(*self.locator)
+            element.clear()
+            element.send_keys(text)
+        except TimeoutError:
+            raise TimeoutError(f"Unable to locate or interact with the element: {self.locator}.")
+
+    def click(self):
+        try:
+            self.wait_for_element(EC.element_to_be_clickable)
+            element = self.driver.find_element(*self.locator)
+            element.click()
+        except TimeoutError:
+            raise TimeoutError(f"Unable to locate or interact with the element to be click: {self.locator}.")
 
     def dropdown_select(self, text):
         try:
-            self.web_element = self.wait_for_element(EC.presence_of_element_located)
-            select = Select(self.web_element)
+            element = self.wait_for_element(EC.presence_of_element_located)
+            select = Select(element)
             select.select_by_visible_text(text)
-        except:
-            raise Exception(f"Unable to locate or interact with the element to be selected: {self.locator}.")
+        except TimeoutError:
+            raise TimeoutError(f"Unable to locate or interact with the element to be selected: {self.locator}.")
 
     def hover_over(self):
         try:
-            self.web_element = self.wait_for_element(EC.visibility_of_element_located)
+            element = self.wait_for_element(EC.visibility_of_element_located)
             action = ActionChains(self.driver)
-            action.move_to_element(self.web_element).perform()
-        except:
-            raise Exception("Element not found for hover operation")
+            action.move_to_element(element).perform()
+        except TimeoutError:
+            raise TimeoutError("Element not found for hover operation")
 
+    def get_text(self):
+        try:
+            element = self.wait_for_element(EC.visibility_of_element_located)
+            return element.text
+        except TimeoutError:
+            raise TimeoutError(f"Element not found to get text: {self.locator}")
+
+    def get_attribute(self, attribute):
+        try:
+            element = self.wait_for_element(EC.visibility_of_element_located)
+            return element.get_attribute(attribute)
+        except TimeoutError:
+            raise TimeoutError(f"Element not found to get attribute selection: {self.locator}")

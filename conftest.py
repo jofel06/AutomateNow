@@ -8,7 +8,6 @@ def pytest_addoption(parser):
 @pytest.fixture(scope="function")
 def driver(request):
     browser = request.config.getoption("--browser")
-    driver = None
 
     if browser == "chrome":
         driver = webdriver.Chrome()
