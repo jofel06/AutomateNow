@@ -1,5 +1,3 @@
-from lib2to3.pgen2.driver import Driver
-
 from conftest import driver
 from pages.base_element.Base_Element import BaseElement
 from selenium.webdriver.common.by import By
